@@ -1,19 +1,25 @@
 $(document).ready(function() {
-	$("#lenderSelect option").click(function() {
+	$("#countries option").click(function() {
 		displayLenders();
    	 });
    	 $(".sortby").on('change', function() {
 		displayLenders();
     });
+    $(".paging").on('change', function() {
+			displayLenders();
+    });
 });
 function displayLenders() {
 	var sortBy = $(".sortby:checked").val(),
-		countryCode = $("#lenderSelect").val();
+		countryCode = $("#countries ").val(),
+		page = $("#paging").val();
+		if (page == 0) page = 1;
 	// get a list of vendor ids
-	$.getJSON("https://api.kivaws.org/v1/lenders/search.json?sort_by=" + sortBy + "&country_code="+countryCode, function(result){
+	$.getJSON("https://api.kivaws.org/v1/lenders/search.json?sort_by=" + sortBy + "&country_code="+countryCode + "&page=" + page, function(result){
 		var lenders = result.lenders,
 			len = lenders.length,
-			lenderIds = "";
+			lenderIds = "", paging = result.paging;
+			var pages=paging.pages
 			// get the list of lenders to retrieve
 			for (var i = 0; i < len; i++) {
 				lenderIds = lenderIds + lenders[i].lender_id;
@@ -21,6 +27,14 @@ function displayLenders() {
 					lenderIds = lenderIds + ",";
 				}
 			};
+			$(".paging").empty();
+			console.log(paging);
+			console.log("pages" +pages);
+			for (var i = 1; i <= pages; i++) {
+				selected = "";
+				if (i == page) selected = "selected";
+				$(".paging").append("<option "+ selected +" value=" + i + ">" + i + "</option>");
+			}
 			// display detailed info on each lender
 			$.getJSON("https://api.kivaws.org/v1/lenders/" + lenderIds + ".json", function(result) {
 					var lenders = result.lenders,
